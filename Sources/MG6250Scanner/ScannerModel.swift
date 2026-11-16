@@ -40,7 +40,12 @@ final class ScannerModel: ObservableObject {
     @Published var mode: ColorMode { didSet { UserDefaults.standard.set(mode.rawValue, forKey: "mode") } }
     @Published var format: ExportFormat { didSet { UserDefaults.standard.set(format.rawValue, forKey: "format") } }
     /// Area to scan, in inches on the glass.
-    @Published var selection = ScannerModel.platen
+    @Published var selection = ScannerModel.platen {
+        didSet {
+            guard selection != oldValue else { return }
+            UserDefaults.standard.set([selection.minX, selection.minY, selection.width, selection.height], forKey: "selection")
+        }
+    }
 
     // Results
     @Published var preview: CGImage?
@@ -62,6 +67,13 @@ final class ScannerModel: ObservableObject {
         dpi = PixmaScanner.resolutions.contains(savedDPI) ? savedDPI : 300
         mode = ColorMode(rawValue: d.string(forKey: "mode") ?? "") ?? .color
         format = ExportFormat(rawValue: d.string(forKey: "format") ?? "") ?? .pdf
+        // Restore the last scan area, if it still fits on the glass.
+        if let saved = d.array(forKey: "selection") as? [Double], saved.count == 4 {
+            let rect = CGRect(x: saved[0], y: saved[1], width: saved[2], height: saved[3])
+            if rect.width >= 0.25, rect.height >= 0.25, Self.platen.insetBy(dx: -0.001, dy: -0.001).contains(rect) {
+                selection = rect
+            }
+        }
     }
 
     var selectedPage: Page? { pages.first { $0.id == selectedPageID } }
@@ -184,10 +196,24 @@ final class ScannerModel: ObservableObject {
         selectedPageID = pages.isEmpty ? nil : pages[min(index, pages.count - 1)].id
     }
 
+    private func rect(for paper: PaperSize) -> CGRect {
+        CGRect(x: 0, y: 0,
+               width: min(paper.widthMM / 25.4, Self.platen.width),
+               height: min(paper.heightMM / 25.4, Self.platen.height))
+    }
+
+    /// The paper size the current area corresponds to, or nil for a
+    /// hand-drawn (custom) area.
+    var currentPaper: PaperSize? {
+        PaperSize.all.first { paper in
+            let r = rect(for: paper)
+            return abs(r.minX - selection.minX) < 0.005 && abs(r.minY - selection.minY) < 0.005
+                && abs(r.width - selection.width) < 0.005 && abs(r.height - selection.height) < 0.005
+        }
+    }
+
     func applyPaper(_ paper: PaperSize) {
-        selection = CGRect(x: 0, y: 0,
-                           width: min(paper.widthMM / 25.4, Self.platen.width),
-                           height: min(paper.heightMM / 25.4, Self.platen.height))
+        selection = rect(for: paper)
         selectedPageID = nil
     }
 

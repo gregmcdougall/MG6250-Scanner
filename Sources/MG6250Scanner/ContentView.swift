@@ -32,6 +32,7 @@ struct ContentView: View {
 
 private struct Sidebar: View {
     @EnvironmentObject private var model: ScannerModel
+    private static let customArea = "__custom__"
 
     var body: some View {
         VStack(alignment: .leading, spacing: 18) {
@@ -89,9 +90,16 @@ private struct Sidebar: View {
                     ForEach(PixmaScanner.resolutions, id: \.self) { Text("\($0) dpi").tag($0) }
                 }
 
-                Menu("Set area to paper size") {
-                    ForEach(PaperSize.all) { paper in
-                        Button(paper.name) { model.applyPaper(paper) }
+                Picker("Area", selection: Binding(
+                    get: { model.currentPaper?.id ?? Self.customArea },
+                    set: { id in
+                        if let paper = PaperSize.all.first(where: { $0.id == id }) { model.applyPaper(paper) }
+                    })) {
+                    ForEach(PaperSize.all) { Text($0.name).tag($0.id) }
+                    // Shown only while the area has been drawn by hand.
+                    if model.currentPaper == nil {
+                        Divider()
+                        Text("Custom").tag(Self.customArea)
                     }
                 }
                 Text(model.selectionSummary)
