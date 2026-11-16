@@ -23,6 +23,9 @@ struct MG6250ScannerApp: App {
                 .frame(minWidth: 860, minHeight: 640)
         }
         .defaultSize(width: 1040, height: 780)
+        // The content sets only the window's minimum size; it must never
+        // resize the window itself when a scan arrives.
+        .windowResizability(.contentMinSize)
         .commands {
             CommandGroup(replacing: .newItem) {}
         }

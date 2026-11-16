@@ -178,12 +178,19 @@ private struct PageView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            Image(decorative: page.display, scale: 1)
-                .resizable()
-                .interpolation(.high)
-                .aspectRatio(contentMode: .fit)
-                .shadow(radius: 6, y: 2)
-                .padding(20)
+            // The image is an overlay on a flexible spacer so that its pixel
+            // size never becomes the layout's ideal size. Otherwise the
+            // window snaps to the scan's dimensions and cannot be resized.
+            Color.clear
+                .overlay(
+                    Image(decorative: page.display, scale: 1)
+                        .resizable()
+                        .interpolation(.high)
+                        .aspectRatio(contentMode: .fit)
+                        .shadow(radius: 6, y: 2)
+                        .padding(20)
+                )
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
             HStack(spacing: 12) {
                 Button { model.rotateSelected(clockwise: false) } label: { Label("Rotate left", systemImage: "rotate.left") }
                 Button { model.rotateSelected(clockwise: true) } label: { Label("Rotate right", systemImage: "rotate.right") }
