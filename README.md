@@ -58,3 +58,7 @@ build/mg6250scan --host 192.168.1.249 --dpi 600 --gray --area 0,0,148,210 -o a5.
 - The wire protocol is undocumented by Canon. The details here were worked out
   with reference to the SANE project's `pixma` backend; the code is an
   independent Swift implementation.
+
+## Licence
+
+MIT — see [LICENSE](LICENSE).
