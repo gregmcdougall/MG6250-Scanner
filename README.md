@@ -3,7 +3,20 @@
 A network scanner driver and Mac app for the Canon PIXMA MG6250 (MG6200 series),
 which has no AirScan support and no current Canon driver for macOS.
 
-## Build and run
+## Download
+
+**[Download the latest release](https://github.com/gregmcdougall/MG6250-Scanner/releases/latest)**:
+unzip **MG6250-Scanner** and drag the app into Applications. It runs on Intel and
+Apple Silicon Macs with macOS 13 or later.
+
+The app isn't notarised, so macOS blocks it the first time. Try to open it, then
+click **Open Anyway** in System Settings › Privacy & Security. Or run:
+
+```bash
+xattr -dr com.apple.quarantine "/Applications/MG6250 Scanner.app"
+```
+
+## Build from source
 
 ```bash
 ./build-app.sh
